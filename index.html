@@ -1,71 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Interactive Stock Market Game</title>
+  <title>Stock Market Adventure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin: 20px;
+      margin: 0;
+      background-color: #f4f4f9;
     }
-    .stock {
-      margin: 10px auto;
-      padding: 10px;
-      border: 1px solid #ccc;
-      width: 300px;
-      background-color: #f9f9f9;
+    h1 {
+      color: #333;
+      padding: 20px;
     }
-    .portfolio {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      background-color: #e9f7ef;
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .stock, .event, .education, .leaderboard {
+      margin: 20px auto;
+      padding: 15px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      background-color: #fff;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     }
     button {
-      margin-top: 5px;
-    }
-    .event {
-      margin-top: 20px;
       padding: 10px;
-      border: 1px solid #ccc;
-      background-color: #fff3cd;
+      margin-top: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .leaderboard ol {
+      padding: 0;
+      list-style-type: none;
+    }
+    .leaderboard ol li {
+      margin: 5px 0;
+    }
+    .badge {
+      padding: 5px 10px;
+      background-color: #ffd700;
+      color: #333;
+      border-radius: 5px;
+      font-weight: bold;
+      display: inline-block;
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
-  <h1>Interactive Stock Market Game</h1>
-
-  <div id="news-feed" class="event">
-    <h2>Market News</h2>
-    <p id="event-message">Welcome to the Stock Market Game! Trade wisely!</p>
+  <h1>Stock Market Adventure for Kids</h1>
+  <div class="container">
+    <div class="education">
+      <h2>Learn About the Stock Market</h2>
+      <p id="learning-tip">Tip: Buy low, sell high! Stocks are like pieces of a company.</p>
+    </div>
+    <div id="stocks">
+      <!-- Stocks will be dynamically added here -->
+    </div>
+    <div class="portfolio">
+      <h2>Your Portfolio</h2>
+      <p id="balance">Balance: $1000</p>
+      <p id="portfolio-value">Portfolio Value: $0</p>
+      <p id="total-wealth">Total Wealth: $1000</p>
+    </div>
+    <div class="event">
+      <h2>Random Events</h2>
+      <p id="event-message">Keep an eye out for special events!</p>
+    </div>
+    <div class="leaderboard">
+      <h2>Leaderboard</h2>
+      <ol id="leaderboard-list">
+        <!-- Leaderboard entries -->
+      </ol>
+    </div>
   </div>
 
-  <div id="stocks">
-    <!-- Dynamic stocks will load here -->
-  </div>
-
-  <div class="portfolio">
-    <h2>Your Portfolio</h2>
-    <p id="balance">Balance: $1000</p>
-    <p id="portfolio-value">Portfolio Value: $0</p>
-    <p id="total-wealth">Total Wealth: $1000</p>
-  </div>
-
-  <!-- Add interactive script -->
   <script>
-    // Define initial variables
+    // Game Variables
     let balance = 1000;
     let portfolio = {};
+    let leaderboard = [{ name: "Player1", wealth: 1200 }, { name: "Player2", wealth: 1100 }];
     const stocks = [
-      { name: "Tech Giants Inc.", price: 70 },
-      { name: "Eco Solutions Ltd.", price: 50 },
-      { name: "Food World Co.", price: 40 }
+      { name: "Candy Corp", price: Math.floor(Math.random() * 50) + 50 },
+      { name: "Toy Kingdom", price: Math.floor(Math.random() * 50) + 30 },
+      { name: "Space Explorers", price: Math.floor(Math.random() * 50) + 20 },
     ];
+    let randomEventCooldown = 0;
 
-    // Function to render stocks
+    // Game Initialization
+    function initializeGame() {
+      renderStocks();
+      updatePortfolio();
+      renderLeaderboard();
+      setInterval(updateStockPrices, 5000); // Update stock prices every 5 seconds
+      setInterval(triggerRandomEvent, 15000); // Trigger random events every 15 seconds
+    }
+
     function renderStocks() {
       const stockContainer = document.getElementById("stocks");
-      stockContainer.innerHTML = ""; // Clear previous content
+      stockContainer.innerHTML = ""; // Clear previous stocks
 
       stocks.forEach((stock, index) => {
         const stockDiv = document.createElement("div");
@@ -80,40 +124,41 @@
       });
     }
 
-    // Function to buy stock
     function buyStock(index) {
       const stock = stocks[index];
       if (balance >= stock.price) {
         balance -= stock.price;
         portfolio[stock.name] = (portfolio[stock.name] || 0) + 1;
         updatePortfolio();
-        document.getElementById("event-message").innerText = `You bought one share of ${stock.name} for $${stock.price}`;
       } else {
-        document.getElementById("event-message").innerText = "Not enough balance!";
+        alert("Not enough balance!");
       }
     }
 
-    // Function to sell stock
     function sellStock(index) {
       const stock = stocks[index];
       if (portfolio[stock.name]) {
         balance += stock.price;
         portfolio[stock.name] -= 1;
-        if (portfolio[stock.name] === 0) {
-          delete portfolio[stock.name];
-        }
+        if (portfolio[stock.name] === 0) delete portfolio[stock.name];
         updatePortfolio();
-        document.getElementById("event-message").innerText = `You sold one share of ${stock.name} for $${stock.price}`;
       } else {
-        document.getElementById("event-message").innerText = "You don't own this stock!";
+        alert("You don't own this stock!");
       }
     }
 
-    // Update portfolio and wealth display
+    function updateStockPrices() {
+      stocks.forEach(stock => {
+        const change = Math.floor(Math.random() * 10) - 5; // Random price change (-5 to +5)
+        stock.price = Math.max(stock.price + change, 1); // Ensure price doesn't go below 1
+      });
+      renderStocks();
+    }
+
     function updatePortfolio() {
-      let portfolioValue = Object.keys(portfolio).reduce((total, stockName) => {
-        const stock = stocks.find(s => s.name === stockName);
-        return total + (portfolio[stockName] * stock.price);
+      let portfolioValue = Object.keys(portfolio).reduce((sum, stockName) => {
+        const stockPrice = stocks.find(s => s.name === stockName).price;
+        return sum + portfolio[stockName] * stockPrice;
       }, 0);
 
       document.getElementById("balance").innerText = `Balance: $${balance}`;
@@ -121,9 +166,34 @@
       document.getElementById("total-wealth").innerText = `Total Wealth: $${balance + portfolioValue}`;
     }
 
-    // Initialize game
-    renderStocks();
-    updatePortfolio();
+    function triggerRandomEvent() {
+      if (randomEventCooldown > 0) {
+        randomEventCooldown--;
+        return;
+      }
+      const eventMessage = document.getElementById("event-message");
+      const eventType = Math.random() < 0.5 ? "bonus" : "crash";
+
+      if (eventType === "bonus") {
+        const bonus = Math.floor(Math.random() * 200) + 50;
+        balance += bonus;
+        eventMessage.innerText = `Surprise Bonus! You received $${bonus}!`;
+      } else {
+        const penalty = Math.floor(Math.random() * 200) + 50;
+        balance = Math.max(balance - penalty, 0);
+        eventMessage.innerText = `Market Crash! You lost $${penalty}!`;
+      }
+      updatePortfolio();
+      randomEventCooldown = 2; // Cooldown for events
+    }
+
+    function renderLeaderboard() {
+      const leaderboardList = document.getElementById("leaderboard-list");
+      leaderboard.sort((a, b) => b.wealth - a.wealth);
+      leaderboardList.innerHTML = leaderboard.map(player => `<li>${player.name}: $${player.wealth}</li>`).join("");
+    }
+
+    initializeGame();
   </script>
 </body>
 </html>
