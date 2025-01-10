@@ -1,258 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Advanced Stock Market Adventure for Kids</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      background-color: #f4f4f9;
-    }
-    h1 {
-      color: #333;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .stock, .event, .education, .leaderboard, .reward {
-      margin: 20px auto;
-      padding: 15px;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      background-color: #fff;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    }
-    button {
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      background-color: #007bff;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .leaderboard ol {
-      padding: 0;
-      list-style-type: none;
-    }
-    .leaderboard ol li {
-      margin: 5px 0;
-    }
-    .badge {
-      padding: 5px 10px;
-      background-color: #ffd700;
-      color: #333;
-      border-radius: 5px;
-      font-weight: bold;
-      display: inline-block;
-      margin: 5px 0;
-    }
-    #stock-dashboard {
-      text-align: left;
-      margin: 20px 0;
-      background-color: #f1f1f1;
-      padding: 15px;
-      border-radius: 10px;
-    }
-    .newsfeed {
-      text-align: left;
-      padding: 10px;
-      background-color: #e6f7ff;
-      margin-top: 20px;
-      border-radius: 8px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Stock Market Game for Kids</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #e9f7fb; color: #333; }
+        h1 { padding: 20px; background-color: #007bff; color: white; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .button { padding: 12px 25px; font-size: 18px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .button:hover { background-color: #218838; }
+        .stock-list, .leaderboard { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .stock-item, .leaderboard-item { background-color: white; border-radius: 10px; padding: 15px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); width: 250px; }
+        .stock-item h3 { margin-top: 0; }
+        .stock-item p, .leaderboard-item p { font-size: 14px; }
+        .stock-item button { margin-top: 10px; }
+        .challenge { padding: 15px; margin: 15px 0; background-color: #ffcc00; border-radius: 5px; text-align: center; }
+        .news-feed { margin-top: 20px; padding: 15px; background-color: #f1f1f1; border-radius: 5px; }
+        .leaderboard { margin-top: 30px; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .achievements { margin-top: 20px; padding: 15px; background-color: #e2e2e2; border-radius: 5px; }
+    </style>
 </head>
 <body>
-  <h1>Advanced Stock Market Adventure for Kids</h1>
-  <div class="container">
-    <div class="education">
-      <h2>Learn About the Stock Market</h2>
-      <p id="learning-tip">Tip: Diversify your portfolio to manage risks!</p>
+
+    <h1>Super Stock Market Game for Kids</h1>
+    <div class="container">
+
+        <!-- Tutorial Mode Section -->
+        <div id="tutorial-section" class="challenge">
+            <h3>Welcome to the Game!</h3>
+            <p id="tutorial-text">Learn how to invest in the stock market by buying and selling stocks!</p>
+            <button class="button" onclick="startGame()">Start the Game</button>
+        </div>
+
+        <!-- Daily Challenge Section -->
+        <div id="daily-challenge" class="challenge">
+            <h3>Daily Challenge</h3>
+            <p id="challenge-text">Buy at least one stock from the technology sector today!</p>
+            <button class="button" onclick="completeChallenge()">Complete Challenge</button>
+        </div>
+
+        <!-- Stocks Display -->
+        <div class="stock-list" id="stocks">
+            <!-- Stock Items Will Be Added Here -->
+        </div>
+
+        <!-- News Feed Section -->
+        <div id="news-feed" class="news-feed">
+            <h3>Latest Stock Market News</h3>
+            <p>Breaking News: New tech product launch boosts stocks!</p>
+        </div>
+
+        <!-- Achievements Section -->
+        <div id="achievements" class="achievements">
+            <h3>Your Achievements</h3>
+            <ul id="achievements-list">
+                <!-- Achievements will appear here -->
+            </ul>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboard" class="leaderboard">
+            <h3>Leaderboard</h3>
+            <div class="leaderboard-item" id="leaderboard-item">
+                <p>Your Name: <span id="player-name"></span></p>
+                <p>Wealth: $<span id="player-wealth">0</span></p>
+            </div>
+        </div>
     </div>
-    <div id="stocks">
-      <!-- Stocks will be dynamically added here -->
-    </div>
-    <div class="portfolio">
-      <h2>Your Portfolio</h2>
-      <p id="balance">Balance: $1000</p>
-      <p id="portfolio-value">Portfolio Value: $0</p>
-      <p id="total-wealth">Total Wealth: $1000</p>
-      <p id="level">Level: 1</p>
-    </div>
-    <div class="reward">
-      <h2>Achievements</h2>
-      <p id="reward-message">Earn rewards as you progress!</p>
-    </div>
-    <div class="event">
-      <h2>Random Events</h2>
-      <p id="event-message">Watch out for market events!</p>
-    </div>
-    <div id="stock-dashboard">
-      <h2>Stock Analytics Dashboard</h2>
-      <div id="stock-trends">Stock Trends: Rising and Falling!</div>
-      <div id="stock-tips">Stock Tips: Diversify!</div>
-    </div>
-    <div class="newsfeed">
-      <h3>Market News</h3>
-      <p id="newsfeed-message">Latest news affecting your stocks will appear here.</p>
-    </div>
-    <div class="leaderboard">
-      <h2>Leaderboard</h2>
-      <ol id="leaderboard-list">
-        <!-- Leaderboard entries -->
-      </ol>
-    </div>
-  </div>
 
-  <script>
-    // Game Variables
-    let balance = 1000;
-    let portfolio = {};
-    let playerLevel = 1;
-    let playerExperience = 0;
-    let riskTolerance = "Medium"; // Can be Low, Medium, High
-    const stocks = [
-      { name: "DinoTech", price: Math.floor(Math.random() * 50) + 50, type: "Technology" },
-      { name: "ToyEmpire", price: Math.floor(Math.random() * 50) + 30, type: "Retail" },
-      { name: "FutureFoods", price: Math.floor(Math.random() * 50) + 20, type: "Food" },
-    ];
-    let randomEventCooldown = 0;
-    let dividendsCooldown = 0;
+    <script>
+        // Stock Data, including Risk/Reward and Dividends
+        const stocks = [
+            { name: "TechCorp", price: 100, sector: "Technology", risk: "Low", dividend: 5, description: "Leading tech company" },
+            { name: "EnergyNow", price: 80, sector: "Energy", risk: "High", dividend: 10, description: "Sustainable energy firm" },
+            { name: "Foodies Inc.", price: 50, sector: "Food", risk: "Medium", dividend: 3, description: "Global food brand" },
+            { name: "AutoMotors", price: 120, sector: "Automotive", risk: "Medium", dividend: 8, description: "Automobile manufacturer" },
+            { name: "FashionFrenzy", price: 70, sector: "Retail", risk: "Low", dividend: 4, description: "Fashion retail chain" }
+        ];
 
-    // Game Initialization
-    function initializeGame() {
-      renderStocks();
-      updatePortfolio();
-      renderLeaderboard();
-      renderStockDashboard();
-      setInterval(updateStockPrices, 5000); // Update stock prices every 5 seconds
-      setInterval(triggerRandomEvent, 15000); // Trigger random events every 15 seconds
-      setInterval(giveDividends, 10000); // Give dividends every 10 seconds
-      setInterval(checkLevelUp, 1000); // Check level up every second
-    }
+        // Player Object with Portfolio, Wealth, etc.
+        let player = {
+            name: "Player1",
+            balance: 1000,
+            portfolio: [],
+            wealth: 1000,
+            achievements: [],
+            dailyChallengeComplete: false,
+            level: 1
+        };
 
-    function renderStocks() {
-      const stockContainer = document.getElementById("stocks");
-      stockContainer.innerHTML = ""; // Clear previous stocks
+        // Start the game and hide tutorial
+        function startGame() {
+            document.getElementById("tutorial-section").style.display = "none";
+            renderStocks();
+            renderLeaderboard();
+            document.getElementById("player-name").textContent = player.name;
+            document.getElementById("player-wealth").textContent = player.wealth;
+        }
 
-      stocks.forEach((stock, index) => {
-        const stockDiv = document.createElement("div");
-        stockDiv.className = "stock";
-        stockDiv.innerHTML = `
-          <h3>${stock.name} (${stock.type})</h3>
-          <p>Price: $${stock.price}</p>
-          <button onclick="buyStock(${index})">Buy</button>
-          <button onclick="sellStock(${index})">Sell</button>
-        `;
-        stockContainer.appendChild(stockDiv);
-      });
-    }
+        // Render Stock Items
+        function renderStocks() {
+            let stockContainer = document.getElementById("stocks");
+            stockContainer.innerHTML = ""; // Clear previous stock listings
+            stocks.forEach(stock => {
+                let stockItem = document.createElement("div");
+                stockItem.className = "stock-item";
+                stockItem.innerHTML = `
+                    <h3>${stock.name}</h3>
+                    <p>Price: $${stock.price}</p>
+                    <p>Risk: ${stock.risk} | Dividend: $${stock.dividend}</p>
+                    <p>${stock.description}</p>
+                    <button onclick="buyStock('${stock.name}')">Buy</button>
+                    <button onclick="sellStock('${stock.name}')">Sell</button>
+                `;
+                stockContainer.appendChild(stockItem);
+            });
+        }
 
-    function buyStock(index) {
-      const stock = stocks[index];
-      if (balance >= stock.price) {
-        balance -= stock.price;
-        portfolio[stock.name] = (portfolio[stock.name] || 0) + 1;
-        updatePortfolio();
-        playerExperience += 10; // Gain experience for buying
-        showReward("Great purchase! +10 experience.");
-      } else {
-        alert("Not enough balance!");
-      }
-    }
+        // Buy Stock Function
+        function buyStock(stockName) {
+            let stock = stocks.find(s => s.name === stockName);
+            if (player.balance >= stock.price) {
+                player.balance -= stock.price;
+                player.portfolio.push(stock);
+                player.wealth += stock.price;
+                updatePlayer();
+                alert(`Bought 1 share of ${stock.name} for $${stock.price}`);
+            } else {
+                alert("Insufficient balance!");
+            }
+        }
 
-    function sellStock(index) {
-      const stock = stocks[index];
-      if (portfolio[stock.name]) {
-        balance += stock.price;
-        portfolio[stock.name] -= 1;
-        if (portfolio[stock.name] === 0) delete portfolio[stock.name];
-        updatePortfolio();
-        playerExperience += 5; // Gain experience for selling
-        showReward("Nice sell! +5 experience.");
-      } else {
-        alert("You don't own this stock!");
-      }
-    }
+        // Sell Stock Function
+        function sellStock(stockName) {
+            let stockIndex = player.portfolio.findIndex(s => s.name === stockName);
+            if (stockIndex !== -1) {
+                let stock = player.portfolio[stockIndex];
+                player.balance += stock.price;
+                player.wealth -= stock.price;
+                player.portfolio.splice(stockIndex, 1);
+                updatePlayer();
+                alert(`Sold 1 share of ${stock.name} for $${stock.price}`);
+            } else {
+                alert("You don't own this stock!");
+            }
+        }
 
-    function updateStockPrices() {
-      stocks.forEach(stock => {
-        const change = Math.floor(Math.random() * 10) - 5; // Random price change (-5 to +5)
-        stock.price = Math.max(stock.price + change, 1); // Ensure price doesn't go below 1
-      });
-      renderStocks();
-      updateStockDashboard();
-    }
+        // Update Player Stats
+        function updatePlayer() {
+            document.getElementById("player-wealth").textContent = player.wealth;
+            renderLeaderboard();
+        }
 
-    function updatePortfolio() {
-      let portfolioValue = Object.keys(portfolio).reduce((sum, stockName) => {
-        const stockPrice = stocks.find(s => s.name === stockName).price;
-        return sum + portfolio[stockName] * stockPrice;
-      }, 0);
+        // Complete Daily Challenge
+        function completeChallenge() {
+            if (!player.dailyChallengeComplete) {
+                alert("Challenge completed! Earned 50 bonus wealth.");
+                player.wealth += 50;
+                player.dailyChallengeComplete = true;
+                updatePlayer();
+            } else {
+                alert("You already completed today's challenge!");
+            }
+        }
 
-      document.getElementById("balance").innerText = `Balance: $${balance}`;
-      document.getElementById("portfolio-value").innerText = `Portfolio Value: $${portfolioValue}`;
-      document.getElementById("total-wealth").innerText = `Total Wealth: $${balance + portfolioValue}`;
-    }
+        // Achievement System
+        function addAchievement(achievement) {
+            player.achievements.push(achievement);
+            let achievementList = document.getElementById("achievements-list");
+            let li = document.createElement("li");
+            li.textContent = achievement;
+            achievementList.appendChild(li);
+        }
 
-    function showReward(message) {
-      document.getElementById("reward-message").innerText = message;
-    }
+        // Level System: Players level up after a certain wealth threshold
+        function levelUp() {
+            if (player.wealth >= 2000 && player.level === 1) {
+                player.level = 2;
+                addAchievement("Level 2 Achieved!");
+            } else if (player.wealth >= 5000 && player.level === 2) {
+                player.level = 3;
+                addAchievement("Level 3 Achieved!");
+            }
+        }
 
-    function triggerRandomEvent() {
-      if (randomEventCooldown > 0) {
-        randomEventCooldown--;
-        return;
-      }
-      const eventMessage = document.getElementById("event-message");
-      const eventType = Math.random() < 0.5 ? "bonus" : "crash";
+        // Render Leaderboard
+        function renderLeaderboard() {
+            let leaderboard = document.getElementById("leaderboard-item");
+            leaderboard.innerHTML = `
+                <p>${player.name} - Level ${player.level}</p>
+                <p>Wealth: $${player.wealth}</p>
+            `;
+        }
 
-      if (eventType === "bonus") {
-        const bonus = Math.floor(Math.random() * 200) + 50;
-        balance += bonus;
-        eventMessage.innerText = `Surprise Bonus! You received $${bonus}!`;
-      } else {
-        const penalty = Math.floor(Math.random() * 200) + 50;
-        balance = Math.max(balance - penalty, 0);
-        eventMessage.innerText = `Market Crash! You lost $${penalty}!`;
-      }
-      updatePortfolio();
-      randomEventCooldown = 2; // Cooldown for events
-    }
+        // Random Stock Market Events
+        function generateMarketEvent() {
+            const events = [
+                { message: "TechCorp has announced a new revolutionary product!", priceChange: 20 },
+                { message: "Energy stocks take a hit due to new regulations.", priceChange: -15 },
+                { message: "Foodies Inc. releases a new healthy food line.", priceChange: 10 },
+                { message: "Automotive stocks see a boom with a new car model launch.", priceChange: 15 },
+                { message: "FashionFrenzy introduces a new eco-friendly clothing line!", priceChange: 12 }
+            ];
 
-    function updateStockDashboard() {
-      const stockTrends = document.getElementById("stock-trends");
-      const trends = stocks.map(stock => `<p>${stock.name}: ${stock.price >= 50 ? 'Rising' : 'Falling'}</p>`).join('');
-      stockTrends.innerHTML = trends;
-      document.getElementById("stock-tips").innerText = "Tip: Keep an eye on trends to time your buys and sells!";
-    }
+            let randomEvent = events[Math.floor(Math.random() * events.length)];
+            document.getElementById("news-feed").innerHTML = `
+                <h3>Market Event: ${randomEvent.message}</h3>
+                <p>Stock prices will change by $${randomEvent.priceChange}</p>
+            `;
+            stocks.forEach(stock => stock.price += randomEvent.priceChange);
+            renderStocks();
+        }
 
-    function checkLevelUp() {
-      if (playerExperience >= playerLevel * 100) {
-        playerExperience = 0;
-        playerLevel++;
-        document.getElementById("level").innerText = `Level: ${playerLevel}`;
-        showReward(`Congratulations! You leveled up to Level ${playerLevel}!`);
-      }
-    }
+        // Initialize random market events every 10 seconds
+        setInterval(generateMarketEvent, 10000); // Every 10 seconds
 
-    function renderLeaderboard() {
-      const leaderboardList = document.getElementById("leaderboard-list");
-      leaderboard.sort((a, b) => b.wealth - a.wealth);
-      leaderboardList.innerHTML = leaderboard.map(player => `<li>${player.name} - Level ${player.level} - $${player.wealth}</li>`).join("");
-    }
+    </script>
 
-    initializeGame();
-  </script>
 </body>
 </html>
