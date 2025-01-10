@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Interactive Stock Market Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    .stock {
+      margin: 10px auto;
+      padding: 10px;
+      border: 1px solid #ccc;
+      width: 300px;
+      background-color: #f9f9f9;
+    }
+    .portfolio {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #e9f7ef;
+    }
+    button {
+      margin-top: 5px;
+    }
+    .event {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: #fff3cd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Interactive Stock Market Game</h1>
+
+  <div id="news-feed" class="event">
+    <h2>Market News</h2>
+    <p id="event-message">Welcome to the Stock Market Game! Trade wisely!</p>
+  </div>
+
+  <div id="stocks">
+    <!-- Dynamic stocks will load here -->
+  </div>
+
+  <div class="portfolio">
+    <h2>Your Portfolio</h2>
+    <p id="balance">Balance: $1000</p>
+    <p id="portfolio-value">Portfolio Value: $0</p>
+    <p id="total-wealth">Total Wealth: $1000</p>
+  </div>
+
+  <!-- Add interactive script -->
+  <script>
+    // Define initial variables
+    let balance = 1000;
+    let portfolio = {};
+    const stocks = [
+      { name: "Tech Giants Inc.", price: 70 },
+      { name: "Eco Solutions Ltd.", price: 50 },
+      { name: "Food World Co.", price: 40 }
+    ];
+
+    // Function to render stocks
+    function renderStocks() {
+      const stockContainer = document.getElementById("stocks");
+      stockContainer.innerHTML = ""; // Clear previous content
+
+      stocks.forEach((stock, index) => {
+        const stockDiv = document.createElement("div");
+        stockDiv.className = "stock";
+        stockDiv.innerHTML = `
+          <h3>${stock.name}</h3>
+          <p>Price: $${stock.price}</p>
+          <button onclick="buyStock(${index})">Buy</button>
+          <button onclick="sellStock(${index})">Sell</button>
+        `;
+        stockContainer.appendChild(stockDiv);
+      });
+    }
+
+    // Function to buy stock
+    function buyStock(index) {
+      const stock = stocks[index];
+      if (balance >= stock.price) {
+        balance -= stock.price;
+        portfolio[stock.name] = (portfolio[stock.name] || 0) + 1;
+        updatePortfolio();
+        document.getElementById("event-message").innerText = `You bought one share of ${stock.name} for $${stock.price}`;
+      } else {
+        document.getElementById("event-message").innerText = "Not enough balance!";
+      }
+    }
+
+    // Function to sell stock
+    function sellStock(index) {
+      const stock = stocks[index];
+      if (portfolio[stock.name]) {
+        balance += stock.price;
+        portfolio[stock.name] -= 1;
+        if (portfolio[stock.name] === 0) {
+          delete portfolio[stock.name];
+        }
+        updatePortfolio();
+        document.getElementById("event-message").innerText = `You sold one share of ${stock.name} for $${stock.price}`;
+      } else {
+        document.getElementById("event-message").innerText = "You don't own this stock!";
+      }
+    }
+
+    // Update portfolio and wealth display
+    function updatePortfolio() {
+      let portfolioValue = Object.keys(portfolio).reduce((total, stockName) => {
+        const stock = stocks.find(s => s.name === stockName);
+        return total + (portfolio[stockName] * stock.price);
+      }, 0);
+
+      document.getElementById("balance").innerText = `Balance: $${balance}`;
+      document.getElementById("portfolio-value").innerText = `Portfolio Value: $${portfolioValue}`;
+      document.getElementById("total-wealth").innerText = `Total Wealth: $${balance + portfolioValue}`;
+    }
+
+    // Initialize game
+    renderStocks();
+    updatePortfolio();
+  </script>
+</body>
+</html>
