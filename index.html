@@ -1,223 +1,281 @@
+from flask import Flask, request, jsonify, render_template_string
+
+app = Flask(__name__)
+
+# In-memory data store
+users = {}
+prices = {"AAPL": 150, "GOOG": 2800, "AMZN": 3450}
+
+# HTML template for the game
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive Stock Market Game for Kids">
     <title>Stock Market Game</title>
     <style>
-        /* General styles for a responsive design */
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to bottom, #e3f2fd, #90caf9);
-            color: #333;
-            text-align: center;
-            overflow-x: hidden;
-        }
-        header {
-            background: #1e88e5;
-            color: #fff;
-            padding: 20px 10px;
-            font-size: 1.5rem;
-        }
-        main {
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
-        .stock-card {
-            display: inline-block;
-            background: #ffffff;
-            border-radius: 8px;
-            margin: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 250px;
-            transition: transform 0.2s;
-        }
-        .stock-card:hover {
-            transform: scale(1.05);
-        }
-        .stock-card h3 {
-            margin: 0;
-            font-size: 1.25rem;
-        }
-        .stock-card p {
-            font-size: 1rem;
-            margin: 10px 0;
-        }
-        button {
-            background-color: #1e88e5;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #1565c0;
-        }
-        .portfolio, .leaderboard {
-            margin: 20px auto;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-        }
-        .chart {
-            height: 300px;
-            margin: 20px auto;
-        }
-        footer {
-            background: #1e88e5;
-            color: #fff;
-            padding: 10px;
-            font-size: 0.9rem;
-        }
-        footer a {
-            color: #ffcc80;
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .stock-card {
-                width: 90%;
-            }
-            .container {
-                padding: 10px;
-            }
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        .button { padding: 10px 20px; margin: 5px; cursor: pointer; background-color: #007BFF; color: white; border: none; border-radius: 5px; }
+        .button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
-    <header>
-        Stock Market Game for Kids
-    </header>
+    <div class="container">
+        <h1>Stock Market Game</h1>
 
-    <main>
-        <div class="container">
-            <h2>Market News</h2>
-            <div id="news-feed">Welcome to the Stock Market Game! Learn and grow!</div>
-
-            <h2>Stocks Available</h2>
-            <div id="stocks"></div>
-
-            <div class="portfolio">
-                <h2>Your Portfolio</h2>
-                <p id="balance">Balance: $1000</p>
-                <p id="portfolio-value">Portfolio Value: $0</p>
-                <p id="total-wealth">Total Wealth: $1000</p>
-            </div>
-
-            <div class="leaderboard">
-                <h2>Leaderboard</h2>
-                <ol id="leaderboard-list"></ol>
-            </div>
+        <div id="register-section">
+            <h3>Register</h3>
+            <input type="text" id="username" placeholder="Enter your username">
+            <button class="button" onclick="registerUser()">Register</button>
         </div>
-    </main>
 
-    <footer>
-        &copy; 2025 Stock Market Game | Built with <3 for young learners.
-    </footer>
+        <div id="game-section" style="display: none;">
+            <h3>Welcome, <span id="player-name"></span>!</h3>
+            <p>Balance: $<span id="balance">0</span></p>
+
+            <h3>Stocks</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stock</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="stocks-table">
+                </tbody>
+            </table>
+
+            <h3>Portfolio</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stock</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody id="portfolio-table">
+                </tbody>
+            </table>
+
+            <h3>Leaderboard</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Net Worth</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-table">
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
-        // Variables for tracking game state
-        let balance = 1000;
-        let portfolio = {};
-        const stocks = [
-            { name: "Tech Titans", price: randomPrice() },
-            { name: "Eco Energy", price: randomPrice() },
-            { name: "Foodies Inc.", price: randomPrice() },
-        ];
-        const leaderboard = [
-            { name: "Player1", value: 1200 },
-            { name: "Player2", value: 1100 },
-            { name: "You", value: balance },
-        ];
+        let currentUser = null;
 
-        // Utility function to generate random stock prices
-        function randomPrice() {
-            return Math.floor(Math.random() * 50) + 50;
-        }
+        async function registerUser() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert('Please enter a username.');
+                return;
+            }
 
-        // Render stocks
-        function renderStocks() {
-            const stockContainer = document.getElementById("stocks");
-            stockContainer.innerHTML = "";
-            stocks.forEach((stock, index) => {
-                const stockCard = document.createElement("div");
-                stockCard.className = "stock-card";
-                stockCard.innerHTML = `
-                    <h3>${stock.name}</h3>
-                    <p>Price: $${stock.price}</p>
-                    <button onclick="buyStock(${index})">Buy</button>
-                    <button onclick="sellStock(${index})">Sell</button>
-                `;
-                stockContainer.appendChild(stockCard);
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
             });
-        }
 
-        // Buy stock function
-        function buyStock(index) {
-            const stock = stocks[index];
-            if (balance >= stock.price) {
-                balance -= stock.price;
-                portfolio[stock.name] = (portfolio[stock.name] || 0) + 1;
-                updatePortfolio();
-                alert(`Bought one share of ${stock.name} for $${stock.price}`);
+            const data = await response.json();
+            if (data.success) {
+                currentUser = username;
+                document.getElementById('player-name').textContent = username;
+                document.getElementById('balance').textContent = data.balance;
+                document.getElementById('register-section').style.display = 'none';
+                document.getElementById('game-section').style.display = 'block';
+                loadStocks();
+                loadPortfolio();
+                loadLeaderboard();
             } else {
-                alert("Not enough balance!");
+                alert(data.message);
             }
         }
 
-        // Sell stock function
-        function sellStock(index) {
-            const stock = stocks[index];
-            if (portfolio[stock.name]) {
-                balance += stock.price;
-                portfolio[stock.name] -= 1;
-                if (portfolio[stock.name] === 0) delete portfolio[stock.name];
-                updatePortfolio();
-                alert(`Sold one share of ${stock.name} for $${stock.price}`);
-            } else {
-                alert("You don't own this stock!");
+        async function loadStocks() {
+            const response = await fetch('/stocks');
+            const stocks = await response.json();
+
+            const table = document.getElementById('stocks-table');
+            table.innerHTML = '';
+            for (const [stock, price] of Object.entries(stocks)) {
+                table.innerHTML += `
+                    <tr>
+                        <td>${stock}</td>
+                        <td>$${price}</td>
+                        <td>
+                            <button class="button" onclick="buyStock('${stock}')">Buy</button>
+                            <button class="button" onclick="sellStock('${stock}')">Sell</button>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
-        // Update portfolio
-        function updatePortfolio() {
-            const portfolioValue = Object.keys(portfolio).reduce((sum, name) => {
-                const stock = stocks.find(s => s.name === name);
-                return sum + (portfolio[name] * stock.price);
-            }, 0);
+        async function loadPortfolio() {
+            const response = await fetch(`/portfolio?username=${currentUser}`);
+            const portfolio = await response.json();
 
-            document.getElementById("balance").innerText = `Balance: $${balance}`;
-            document.getElementById("portfolio-value").innerText = `Portfolio Value: $${portfolioValue}`;
-            document.getElementById("total-wealth").innerText = `Total Wealth: $${balance + portfolioValue}`;
-
-            leaderboard[2].value = balance + portfolioValue;
-            updateLeaderboard();
+            const table = document.getElementById('portfolio-table');
+            table.innerHTML = '';
+            for (const [stock, quantity] of Object.entries(portfolio)) {
+                table.innerHTML += `
+                    <tr>
+                        <td>${stock}</td>
+                        <td>${quantity}</td>
+                    </tr>
+                `;
+            }
         }
 
-        // Update leaderboard
-        function updateLeaderboard() {
-            leaderboard.sort((a, b) => b.value - a.value);
-            document.getElementById("leaderboard-list").innerHTML = leaderboard
-                .map(player => `<li>${player.name}: $${player.value}</li>`)
-                .join("");
+        async function loadLeaderboard() {
+            const response = await fetch('/leaderboard');
+            const leaderboard = await response.json();
+
+            const table = document.getElementById('leaderboard-table');
+            table.innerHTML = '';
+            for (const entry of leaderboard) {
+                table.innerHTML += `
+                    <tr>
+                        <td>${entry.username}</td>
+                        <td>$${entry.net_worth}</td>
+                    </tr>
+                `;
+            }
         }
 
-        renderStocks();
-        updatePortfolio();
+        async function buyStock(stock) {
+            const response = await fetch('/buy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser, stock })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('balance').textContent = data.balance;
+                loadPortfolio();
+                loadLeaderboard();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function sellStock(stock) {
+            const response = await fetch('/sell', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser, stock })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('balance').textContent = data.balance;
+                loadPortfolio();
+                loadLeaderboard();
+            } else {
+                alert(data.message);
+            }
+        }
     </script>
 </body>
 </html>
+"""
+
+@app.route('/')
+def index():
+    return render_template_string(HTML_TEMPLATE)
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"success": False, "message": "Username is required."}), 400
+
+    if username in users:
+        return jsonify({"success": False, "message": "Username already exists."}), 400
+
+    users[username] = {"balance": 10000, "portfolio": {}}
+    return jsonify({"success": True, "balance": 10000})
+
+@app.route('/stocks')
+def get_stocks():
+    return jsonify(prices)
+
+@app.route('/portfolio')
+def get_portfolio():
+    username = request.args.get('username')
+    if username not in users:
+        return jsonify({}), 404
+    return jsonify(users[username]['portfolio'])
+
+@app.route('/buy', methods=['POST'])
+def buy_stock():
+    data = request.json
+    username = data.get('username')
+    stock = data.get('stock')
+
+    if username not in users or stock not in prices:
+        return jsonify({"success": False, "message": "Invalid user or stock."}), 400
+
+    user = users[username]
+    price = prices[stock]
+
+    if user['balance'] < price:
+        return jsonify({"success": False, "message": "Insufficient balance."}), 400
+
+    user['balance'] -= price
+    user['portfolio'][stock] = user['portfolio'].get(stock, 0) + 1
+    return jsonify({"success": True, "balance": user['balance']})
+
+@app.route('/sell', methods=['POST'])
+def sell_stock():
+    data = request.json
+    username = data.get('username')
+    stock = data.get('stock')
+
+    if username not in users or stock not in prices:
+        return jsonify({"success": False, "message": "Invalid user or stock."}), 400
+
+    user = users[username]
+    if stock not in user['portfolio'] or user['portfolio'][stock] <= 0:
+        return jsonify({"success": False, "message": "You do not own this stock."}), 400
+
+    price = prices[stock]
+    user['balance'] += price
+    user['portfolio'][stock] -= 1
+
+    if user['portfolio'][stock] == 0:
+        del user['portfolio'][stock]
+
+    return jsonify({"success": True, "balance": user['balance']})
+
+@app.route('/leaderboard')
+def leaderboard():
+    leaderboard = [
+        {"username": username, "net_worth": user['balance'] + sum(prices[stock] * qty for stock, qty in user['portfolio'].items())}
+        for username, user in users.items()
+    ]
+    leaderboard.sort(key=lambda x: x['net_worth'], reverse=True)
+    return jsonify(leaderboard[:10])
+
+if __name__ == '__main__':
+    app.run(debug=True)
