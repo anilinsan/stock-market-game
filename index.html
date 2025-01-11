@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market Game</title>
+    <title>Advanced Stock Market Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,18 +60,59 @@
         .stats div:last-child {
             margin-right: 0;
         }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <h1>Stock Market Game</h1>
-        <p>Manage your portfolio and respond to market news!</p>
+        <h1>Advanced Stock Market Game</h1>
+        <p>Manage your portfolio, respond to market news, and analyze trends!</p>
     </header>
     <div class="container">
         <div class="stats">
             <div id="timer">Time Left: 5:00</div>
             <div id="portfolio-value">Portfolio Value: $100,000</div>
             <div id="risk-status">Risk Level: Low</div>
+            <div id="market-trend">Market Trend: Neutral</div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="stockChart"></canvas>
         </div>
 
         <div class="news-section">
@@ -86,6 +127,7 @@
                     <th>Stock</th>
                     <th>Price</th>
                     <th>Change</th>
+                    <th>Volume</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -98,24 +140,39 @@
                 <tr>
                     <th>Stock</th>
                     <th>Quantity</th>
-                    <th>Total Value</th>
+                    <th>Average Cost</th>
+                    <th>Current Value</th>
+                    <th>Profit/Loss</th>
                 </tr>
             </thead>
             <tbody id="portfolio"></tbody>
         </table>
     </div>
 
+    <div id="tradeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Trade Stock</h2>
+            <p>Stock: <span id="modalStockName"></span></p>
+            <p>Current Price: $<span id="modalStockPrice"></span></p>
+            <label for="tradeQuantity">Quantity:</label>
+            <input type="number" id="tradeQuantity" min="1" value="1">
+            <button id="confirmTrade">Confirm Trade</button>
+        </div>
+    </div>
+
     <script>
         const stocks = [
-            { name: "TechCorp", price: 150, volatility: 5 },
-            { name: "HealthPlus", price: 200, volatility: 7 },
-            { name: "EcoEnergy", price: 100, volatility: 4 },
-            { name: "AutoDrive", price: 80, volatility: 6 }
+            { name: "TechCorp", price: 150, volatility: 5, volume: 1000000 },
+            { name: "HealthPlus", price: 200, volatility: 7, volume: 750000 },
+            { name: "EcoEnergy", price: 100, volatility: 4, volume: 500000 },
+            { name: "AutoDrive", price: 80, volatility: 6, volume: 1200000 }
         ];
 
         const portfolio = {};
         let cash = 100000;
         let timer = 300;
+        let marketTrend = 0;
 
         const newsEvents = [
             "TechCorp announces record profits!",
@@ -126,12 +183,77 @@
             "Economic growth slows, affecting all sectors."
         ];
 
+        const chart = new Chart(document.getElementById('stockChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: stocks.map(stock => ({
+                    label: stock.name,
+                    data: [],
+                    borderColor: getRandomColor(),
+                    fill: false
+                }))
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Stock Price Trends'
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Price'
+                        }
+                    }
+                }
+            }
+        });
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
         function updateStocks() {
+            marketTrend += (Math.random() - 0.5) * 0.1;
+            marketTrend = Math.max(-1, Math.min(1, marketTrend));
+
             stocks.forEach(stock => {
-                const change = (Math.random() * stock.volatility * 2 - stock.volatility).toFixed(2);
+                const change = (Math.random() * stock.volatility * 2 - stock.volatility + marketTrend * 2).toFixed(2);
                 stock.price = Math.max(1, stock.price + parseFloat(change));
                 stock.change = parseFloat(change);
+                stock.volume += Math.floor(Math.random() * 10000 - 5000);
+                stock.volume = Math.max(0, stock.volume);
             });
+
+            updateChart();
+        }
+
+        function updateChart() {
+            const time = new Date().toLocaleTimeString();
+            chart.data.labels.push(time);
+            chart.data.datasets.forEach((dataset, i) => {
+                dataset.data.push(stocks[i].price);
+            });
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+            chart.update();
         }
 
         function renderStocks() {
@@ -144,36 +266,59 @@
                         <td>${stock.name}</td>
                         <td>$${stock.price.toFixed(2)}</td>
                         <td style="color: ${stock.change >= 0 ? 'green' : 'red'}">${stock.change.toFixed(2)}</td>
+                        <td>${stock.volume.toLocaleString()}</td>
                         <td>
-                            <button onclick="buyStock('${stock.name}')">Buy</button>
-                            <button onclick="sellStock('${stock.name}')">Sell</button>
+                            <button onclick="openTradeModal('${stock.name}', true)">Buy</button>
+                            <button onclick="openTradeModal('${stock.name}', false)">Sell</button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function buyStock(name) {
-            const stock = stocks.find(s => s.name === name);
-            if (cash >= stock.price) {
-                cash -= stock.price;
-                portfolio[name] = (portfolio[name] || 0) + 1;
-                updatePortfolio();
-            } else {
-                alert("Not enough cash to buy this stock.");
-            }
+        function openTradeModal(stockName, isBuying) {
+            const modal = document.getElementById("tradeModal");
+            const stock = stocks.find(s => s.name === stockName);
+            document.getElementById("modalStockName").textContent = stockName;
+            document.getElementById("modalStockPrice").textContent = stock.price.toFixed(2);
+            document.getElementById("confirmTrade").onclick = () => executeTrade(stockName, isBuying);
+            modal.style.display = "block";
         }
 
-        function sellStock(name) {
-            if (portfolio[name] > 0) {
-                const stock = stocks.find(s => s.name === name);
-                cash += stock.price;
-                portfolio[name] -= 1;
-                if (portfolio[name] === 0) delete portfolio[name];
-                updatePortfolio();
+        function executeTrade(stockName, isBuying) {
+            const stock = stocks.find(s => s.name === stockName);
+            const quantity = parseInt(document.getElementById("tradeQuantity").value);
+            const totalCost = stock.price * quantity;
+
+            if (isBuying) {
+                if (cash >= totalCost) {
+                    cash -= totalCost;
+                    if (!portfolio[stockName]) {
+                        portfolio[stockName] = { quantity: 0, averageCost: 0 };
+                    }
+                    const newTotalQuantity = portfolio[stockName].quantity + quantity;
+                    const newTotalCost = portfolio[stockName].averageCost * portfolio[stockName].quantity + totalCost;
+                    portfolio[stockName].quantity = newTotalQuantity;
+                    portfolio[stockName].averageCost = newTotalCost / newTotalQuantity;
+                } else {
+                    alert("Not enough cash to buy this stock.");
+                    return;
+                }
             } else {
-                alert("You don't own this stock.");
+                if (portfolio[stockName] && portfolio[stockName].quantity >= quantity) {
+                    cash += totalCost;
+                    portfolio[stockName].quantity -= quantity;
+                    if (portfolio[stockName].quantity === 0) {
+                        delete portfolio[stockName];
+                    }
+                } else {
+                    alert("You don't own enough shares of this stock.");
+                    return;
+                }
             }
+
+            updatePortfolio();
+            document.getElementById("tradeModal").style.display = "none";
         }
 
         function updatePortfolio() {
@@ -181,21 +326,39 @@
             portfolioTable.innerHTML = "";
             let totalValue = cash;
 
-            for (const [name, quantity] of Object.entries(portfolio)) {
+            for (const [name, stockInfo] of Object.entries(portfolio)) {
                 const stock = stocks.find(s => s.name === name);
-                const value = quantity * stock.price;
-                totalValue += value;
+                const currentValue = stockInfo.quantity * stock.price;
+                const profitLoss = currentValue - (stockInfo.averageCost * stockInfo.quantity);
+                totalValue += currentValue;
 
                 portfolioTable.innerHTML += `
                     <tr>
                         <td>${name}</td>
-                        <td>${quantity}</td>
-                        <td>$${value.toFixed(2)}</td>
+                        <td>${stockInfo.quantity}</td>
+                        <td>$${stockInfo.averageCost.toFixed(2)}</td>
+                        <td>$${currentValue.toFixed(2)}</td>
+                        <td style="color: ${profitLoss >= 0 ? 'green' : 'red'}">$${profitLoss.toFixed(2)}</td>
                     </tr>
                 `;
             }
 
             document.getElementById("portfolio-value").textContent = `Portfolio Value: $${totalValue.toFixed(2)}`;
+            updateRiskStatus(totalValue);
+        }
+
+        function updateRiskStatus(totalValue) {
+            const initialValue = 100000;
+            const riskPercentage = (totalValue - initialValue) / initialValue * 100;
+            let riskLevel;
+
+            if (riskPercentage < -20) riskLevel = "Very High";
+            else if (riskPercentage < -10) riskLevel = "High";
+            else if (riskPercentage < 0) riskLevel = "Moderate";
+            else if (riskPercentage < 10) riskLevel = "Low";
+            else riskLevel = "Very Low";
+
+            document.getElementById("risk-status").textContent = `Risk Level: ${riskLevel}`;
         }
 
         function updateNews() {
@@ -204,14 +367,21 @@
 
             newsFeed.innerHTML = `<div class="news-item">${newsItem}</div>` + newsFeed.innerHTML;
 
-            // Simulate market reaction to news
             if (newsItem.includes("crash")) {
-                stocks.forEach(stock => {
-                    stock.price = Math.max(1, stock.price * 0.9);
-                });
+                marketTrend -= 0.5;
             } else if (newsItem.includes("record profits")) {
-                stocks[0].price *= 1.1; // Example boost to a specific stock
+                marketTrend += 0.3;
             }
+
+            document.getElementById("market-trend").textContent = `Market Trend: ${getMarketTrendDescription()}`;
+        }
+
+        function getMarketTrendDescription() {
+            if (marketTrend < -0.5) return "Strongly Bearish";
+            if (marketTrend < -0.2) return "Bearish";
+            if (marketTrend < 0.2) return "Neutral";
+            if (marketTrend < 0.5) return "Bullish";
+            return "Strongly Bullish";
         }
 
         function updateTimer() {
@@ -238,9 +408,23 @@
             updateTimer();
         }, 5000);
 
+        // Modal close functionality
+        document.querySelector(".close").onclick = function() {
+            document.getElementById("tradeModal").style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("tradeModal")) {
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("tradeModal")) {
+                document.getElementById("tradeModal").style.display = "none";
+            }
+        }
+
         // Initial Render
         renderStocks();
         updatePortfolio();
+        updateNews();
     </script>
 </body>
 </html>
