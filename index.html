@@ -229,6 +229,150 @@
 
         // Start the game
         initGame();
+                // Educational tips
+        const tips = [
+            "Diversification helps reduce risk in your portfolio.",
+            "Research companies before investing in their stocks.",
+            "Long-term investing often yields better results than short-term trading.",
+            "Pay attention to a company's financial health and growth potential.",
+            "Keep an eye on market trends and economic indicators."
+        ];
+
+        function displayTip() {
+            const tipElement = document.createElement('div');
+            tipElement.className = 'tip';
+            tipElement.textContent = tips[Math.floor(Math.random() * tips.length)];
+            document.querySelector('.container').appendChild(tipElement);
+            setTimeout(() => tipElement.remove(), 5000);
+        }
+
+        setInterval(displayTip, 30000);
+
+        // Leaderboard
+        const leaderboard = [
+            { name: "Player 1", balance: 10500 },
+            { name: "Player 2", balance: 10200 },
+            { name: "Player 3", balance: 9800 }
+        ];
+
+        function updateLeaderboard() {
+            const leaderboardEl = document.createElement('div');
+            leaderboardEl.className = 'leaderboard';
+            leaderboardEl.innerHTML = '<h2>Leaderboard</h2>';
+            leaderboard.forEach((player, index) => {
+                leaderboardEl.innerHTML += `<p>${index + 1}. ${player.name}: $${player.balance.toFixed(2)}</p>`;
+            });
+            document.querySelector('.container').appendChild(leaderboardEl);
+        }
+
+        updateLeaderboard();
+
+        // Market events
+        const events = [
+            "Economic boom! All stock prices increase by 5%.",
+            "Market crash! All stock prices decrease by 5%.",
+            "Tech sector surge! Technology stocks increase by 10%.",
+            "Oil price drop! Energy stocks decrease by 8%.",
+            "New trade deal! International stocks increase by 7%."
+        ];
+
+        function triggerMarketEvent() {
+            const event = events[Math.floor(Math.random() * events.length)];
+            alert(event);
+            // Implement logic to adjust stock prices based on the event
+            updateStockPrices();
+            updateStockList();
+        }
+
+        setInterval(triggerMarketEvent, 60000);
+
+        // Achievement system
+        const achievements = {
+            firstTrade: { name: "First Trade", description: "Make your first stock trade", achieved: false },
+            diversePortfolio: { name: "Diverse Portfolio", description: "Own stocks in at least 3 different companies", achieved: false },
+            bigProfit: { name: "Big Profit", description: "Earn a profit of $1000 or more", achieved: false }
+        };
+
+        function checkAchievements() {
+            if (!achievements.firstTrade.achieved && Object.keys(portfolio).length > 0) {
+                unlockAchievement('firstTrade');
+            }
+            if (!achievements.diversePortfolio.achieved && Object.keys(portfolio).length >= 3) {
+                unlockAchievement('diversePortfolio');
+            }
+            if (!achievements.bigProfit.achieved && balance >= 11000) {
+                unlockAchievement('bigProfit');
+            }
+        }
+
+        function unlockAchievement(achievementId) {
+            achievements[achievementId].achieved = true;
+            alert(`Achievement unlocked: ${achievements[achievementId].name}!`);
+        }
+
+        // Stock performance charts
+        function createPerformanceChart() {
+            const chartContainer = document.createElement('div');
+            chartContainer.id = 'performanceChart';
+            document.querySelector('.container').appendChild(chartContainer);
+
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: Object.keys(stocks).map(stock => ({
+                        label: stock,
+                        data: [100, 120, 115, 130, 125], // Sample data, replace with actual historical data
+                        borderColor: getRandomColor(),
+                        fill: false
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Stock Performance Over Time'
+                    }
+                }
+            });
+        }
+
+        function getRandomColor() {
+            return '#' + Math.floor(Math.random()*16777215).toString(16);
+        }
+
+        createPerformanceChart();
+
+        // Eye-friendly mode
+        function toggleEyeFriendlyMode() {
+            document.body.classList.toggle('eye-friendly');
+        }
+
+        const eyeFriendlyButton = document.createElement('button');
+        eyeFriendlyButton.textContent = 'Toggle Eye-Friendly Mode';
+        eyeFriendlyButton.onclick = toggleEyeFriendlyMode;
+        document.querySelector('.container').appendChild(eyeFriendlyButton);
+
+        // Responsive design adjustments
+        function adjustForScreenSize() {
+            const container = document.querySelector('.container');
+            if (window.innerWidth < 768) {
+                container.style.flexDirection = 'column';
+            } else {
+                container.style.flexDirection = 'row';
+            }
+        }
+
+        window.addEventListener('resize', adjustForScreenSize);
+        adjustForScreenSize();
+
+        // Initialize game
+        initGame();
+    </script>
+</body>
+</html>
+
     </script>
 </body>
 </html>
