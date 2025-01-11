@@ -18,7 +18,6 @@
             padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -34,7 +33,7 @@
             padding: 20px 0;
         }
 
-        h1, h2, h3 {
+        h1 {
             margin: 0;
         }
 
@@ -45,7 +44,7 @@
             margin-top: 20px;
         }
 
-        .stock-list, .portfolio, .news-feed, .leaderboard, .challenges, .achievements {
+        .stock-list, .portfolio, .news-feed {
             flex-basis: calc(33.33% - 20px);
             background-color: white;
             border-radius: 5px;
@@ -80,31 +79,15 @@
             background-color: #1976D2;
         }
 
-        .news-item, .challenge-item, .achievement-item {
+        .news-item {
             margin-bottom: 10px;
             padding: 10px;
             background-color: #e9e9e9;
             border-radius: 3px;
         }
 
-        #performanceChart {
-            width: 100%;
-            height: 300px;
-        }
-
-        .eye-friendly {
-            background-color: #2c2c2c;
-            color: #f0f0f0;
-        }
-
-        .eye-friendly .stock-list, .eye-friendly .portfolio, .eye-friendly .news-feed,
-        .eye-friendly .leaderboard, .eye-friendly .challenges, .eye-friendly .achievements {
-            background-color: #3c3c3c;
-            color: #f0f0f0;
-        }
-
         @media (max-width: 768px) {
-            .stock-list, .portfolio, .news-feed, .leaderboard, .challenges, .achievements {
+            .stock-list, .portfolio, .news-feed {
                 flex-basis: 100%;
             }
         }
@@ -115,11 +98,6 @@
         <h1>Kid's Stock Market Adventure</h1>
     </header>
     <div class="container">
-        <div id="playerInfo">
-            <h3>Player Info</h3>
-            <p>Level: <span id="playerLevel">1</span></p>
-            <p>XP: <span id="playerXP">0</span></p>
-        </div>
         <div class="game-area">
             <div class="stock-list">
                 <h2>Available Stocks</h2>
@@ -134,78 +112,33 @@
                 <h2>Market News</h2>
                 <div id="newsFeed"></div>
             </div>
-            <div class="leaderboard">
-                <h2>Leaderboard</h2>
-                <div id="leaderboardList"></div>
-            </div>
-            <div class="challenges">
-                <h2>Daily Challenges</h2>
-                <div id="challengesList"></div>
-            </div>
-            <div class="achievements">
-                <h2>Achievements</h2>
-                <div id="achievementsList"></div>
-            </div>
         </div>
-        <div id="performanceChart"></div>
-        <button id="eyeFriendlyToggle">Toggle Eye-Friendly Mode</button>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Game state
         let balance = 10000;
         let portfolio = {};
-        let playerLevel = 1;
-        let playerXP = 0;
         let stocks = {
-            'ToyEmpire': { price: 100, trend: 0, risk: 'low', dividend: 0.5 },
-            'DinoTech': { price: 150, trend: 0, risk: 'medium', dividend: 0.7 },
-            'SpaceX': { price: 200, trend: 0, risk: 'high', dividend: 1.0 },
-            'EcoFriends': { price: 80, trend: 0, risk: 'low', dividend: 0.3 },
-            'SuperHero': { price: 120, trend: 0, risk: 'medium', dividend: 0.6 }
+            'ToyEmpire': { price: 100, trend: 0 },
+            'DinoTech': { price: 150, trend: 0 },
+            'SpaceX': { price: 200, trend: 0 },
+            'EcoFriends': { price: 80, trend: 0 },
+            'SuperHero': { price: 120, trend: 0 }
         };
-        let achievements = {
-            firstTrade: { name: "First Trade", description: "Make your first stock trade", achieved: false },
-            diversePortfolio: { name: "Diverse Portfolio", description: "Own stocks in at least 3 different companies", achieved: false },
-            bigProfit: { name: "Big Profit", description: "Earn a profit of $1000 or more", achieved: false }
-        };
-        let dailyChallenges = [
-            "Buy 3 different stocks",
-            "Achieve $200 in profit",
-            "Sell 5 stocks",
-            "Hold a stock for 5 minutes"
-        ];
-        let leaderboard = [
-            { name: "Player 1", balance: 10500 },
-            { name: "Player 2", balance: 10200 },
-            { name: "Player 3", balance: 9800 }
-        ];
 
         // DOM elements
         const stockListEl = document.getElementById('stockList');
         const portfolioListEl = document.getElementById('portfolioList');
         const balanceEl = document.getElementById('balance');
         const newsFeedEl = document.getElementById('newsFeed');
-        const leaderboardListEl = document.getElementById('leaderboardList');
-        const challengesListEl = document.getElementById('challengesList');
-        const achievementsListEl = document.getElementById('achievementsList');
-        const playerLevelEl = document.getElementById('playerLevel');
-        const playerXPEl = document.getElementById('playerXP');
-        const eyeFriendlyToggle = document.getElementById('eyeFriendlyToggle');
 
         // Initialize game
         function initGame() {
             updateStockList();
             updatePortfolio();
             updateBalance();
-            updateLeaderboard();
-            updateChallenges();
-            updateAchievements();
             setInterval(updateStockPrices, 5000);
             setInterval(generateNewsItem, 10000);
-            setInterval(updatePlayerLevel, 10000);
-            setInterval(payDividends, 10000);
-            createPerformanceChart();
         }
 
         // Update stock list
@@ -215,7 +148,7 @@
                 const stockItem = document.createElement('div');
                 stockItem.className = 'stock-item';
                 stockItem.innerHTML = `
-                    <span>${name}: $${data.price.toFixed(2)} (${data.risk} risk)</span>
+                    <span>${name}: $${data.price.toFixed(2)}</span>
                     <button onclick="buyStock('${name}')">Buy</button>
                 `;
                 stockListEl.appendChild(stockItem);
@@ -248,9 +181,6 @@
                 portfolio[name] = (portfolio[name] || 0) + 1;
                 updatePortfolio();
                 updateBalance();
-                checkAchievements();
-                playerXP += 10;
-                updatePlayerXP();
             } else {
                 alert("Not enough money to buy this stock!");
             }
@@ -266,9 +196,6 @@
                 }
                 updatePortfolio();
                 updateBalance();
-                checkAchievements();
-                playerXP += 10;
-                updatePlayerXP();
             }
         }
 
@@ -280,7 +207,6 @@
                 stocks[stock].trend = change > 0 ? 1 : -1;
             }
             updateStockList();
-            updatePerformanceChart();
         }
 
         // Generate news item
@@ -301,205 +227,8 @@
             }
         }
 
-        // Update leaderboard
-        function updateLeaderboard() {
-            leaderboardListEl.innerHTML = '';
-            leaderboard.sort((a, b) => b.balance - a.balance);
-            leaderboard.forEach((player, index) => {
-                const leaderboardItem = document.createElement('div');
-                leaderboardItem.className = 'leaderboard-item';
-                leaderboardItem.textContent = `${index + 1}. ${player.name}: $${player.balance.toFixed(2)}`;
-                leaderboardListEl.appendChild(leaderboardItem);
-            });
-        }
-
-        // Update challenges
-        function updateChallenges() {
-            challengesListEl.innerHTML = '';
-            dailyChallenges.forEach(challenge => {
-                const challengeItem = document.createElement('div');
-                challengeItem.className = 'challenge-item';
-                challengeItem.textContent = challenge;
-                challengesListEl.appendChild(challengeItem);
-            });
-        }
-
-        // Update achievements
-        function updateAchievements() {
-            achievementsListEl.innerHTML = '';
-            for (let [id, achievement] of Object.entries(achievements)) {
-                if (achievement.achieved) {
-                    const achievementItem = document.createElement('div');
-                    achievementItem.className = 'achievement-item';
-                    achievementItem.textContent = `${achievement.name}: ${achievement.description}`;
-                    achievementsListEl.appendChild(achievementItem);
-                }
-            }
-        }
-
-        // Check achievements
-        function checkAchievements() {
-            if (!achievements.firstTrade.achieved && Object.keys(portfolio).length > 0) {
-                unlockAchievement('firstTrade');
-            }
-            if (!achievements.diversePortfolio.achieved && Object.keys(portfolio).length >= 3) {
-                unlockAchievement('diversePortfolio');
-            }
-            if (!achievements.bigProfit.achieved && balance >= 11000) {
-                unlockAchievement('bigProfit');
-            }
-        }
-
-        // Unlock achievement
-        function unlockAchievement(id) {
-            achievements[id].achieved = true;
-            alert(`Achievement unlocked: ${achievements[id].name}!`);
-            updateAchievements();
-            playerXP += 50;
-            updatePlayerXP();
-        }
-
-        // Update player level
-        function updatePlayerLevel() {
-            const newLevel = Math.floor(playerXP / 100) + 1;
-            if (newLevel > playerLevel) {
-                playerLevel = newLevel;
-                playerLevelEl.textContent = playerLevel;
-                alert(`Congratulations! You've reached level ${playerLevel}!`);
-            }
-        }
-
-        // Update player XP
-        function updatePlayerXP() {
-            playerXPEl.textContent = playerXP;
-            updatePlayerLevel();
-        }
-
-        // Pay dividends
-        function payDividends() {
-            let dividendTotal = 0;
-            for (let [name, quantity] of Object.entries(portfolio)) {
-                dividendTotal += stocks[name].dividend * quantity;
-            }
-            if (dividendTotal > 0) {
-                balance += dividendTotal;
-                updateBalance();
-                alert(`You received $${dividendTotal.toFixed(2)} in dividends!`);
-            }
-        }
-
-        // Create performance chart
-        function createPerformanceChart() {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            window.myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: Object.keys(stocks).map(stock => ({
-                        label: stock,
-                        data: [],
-                        borderColor: getRandomColor(),
-                        fill: false
-                    }))
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-        title: {
-            display: true,
-            text: 'Stock Performance Over Time'
-        }
-    }
-});
-}
-
-// Player level and experience
-let playerLevel = 1;
-let playerXP = 0;
-
-function updatePlayerLevel() {
-    const newLevel = Math.floor(playerXP / 100) + 1;
-    if (newLevel > playerLevel) {
-        playerLevel = newLevel;
-        alert(`Congratulations! You've reached level ${playerLevel}!`);
-    }
-    document.getElementById('playerLevel').textContent = playerLevel;
-    document.getElementById('playerXP').textContent = playerXP;
-}
-
-function addPlayerXP(amount) {
-    playerXP += amount;
-    updatePlayerLevel();
-}
-
-// Daily challenges
-const dailyChallenges = [
-    "Buy 3 different stocks",
-    "Achieve $200 in profit",
-    "Sell 5 stocks",
-    "Hold a stock for 5 minutes"
-];
-
-function generateDailyChallenge() {
-    const challenge = dailyChallenges[Math.floor(Math.random() * dailyChallenges.length)];
-    const challengeEl = document.createElement('div');
-    challengeEl.className = 'challenge';
-    challengeEl.textContent = `Daily Challenge: ${challenge}`;
-    document.querySelector('.challenges').appendChild(challengeEl);
-}
-
-// Stock dividends
-function payDividends() {
-    let dividendTotal = 0;
-    for (let [name, quantity] of Object.entries(portfolio)) {
-        dividendTotal += stocks[name].dividend * quantity;
-    }
-    if (dividendTotal > 0) {
-        balance += dividendTotal;
-        updateBalance();
-        alert(`You received $${dividendTotal.toFixed(2)} in dividends!`);
-        addPlayerXP(10);
-    }
-}
-
-// Market events
-function triggerMarketEvent() {
-    const event = events[Math.floor(Math.random() * events.length)];
-    alert(event);
-    for (let stock in stocks) {
-        let change = (Math.random() - 0.5) * 20;
-        stocks[stock].price = Math.max(1, stocks[stock].price * (1 + change / 100));
-    }
-    updateStockList();
-    updatePerformanceChart();
-    addPlayerXP(20);
-}
-
-// Initialize game
-function initGame() {
-    updateStockList();
-    updatePortfolio();
-    updateBalance();
-    updateLeaderboard();
-    generateDailyChallenge();
-    createPerformanceChart();
-    setInterval(updateStockPrices, 5000);
-    setInterval(generateNewsItem, 10000);
-    setInterval(payDividends, 30000);
-    setInterval(triggerMarketEvent, 60000);
-    setInterval(() => addPlayerXP(1), 60000); // Passive XP gain
-}
-
-
-
-
-        // Initialize game
+        // Start the game
         initGame();
-    </script>
-</body>
-</html>
-
     </script>
 </body>
 </html>
