@@ -1,161 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#2c3e50">
-  <title>Stock Market Game for Kids</title>
-  <style>
-    /* General styles */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(to bottom, #e0f7fa, #e0f2f1);
-      color: #333;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      text-align: center;
-    }
-    header {
-      background: #00796b;
-      color: #fff;
-      padding: 20px;
-      font-size: 1.5em;
-      font-weight: bold;
-    }
-    .stock-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 20px 0;
-    }
-    .stock-table th, .stock-table td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-    }
-    .stock-table th {
-      background: #004d40;
-      color: #fff;
-    }
-    .btn {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 5px;
-      color: #fff;
-      background: #00796b;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-    footer {
-      margin-top: 20px;
-      font-size: 0.9em;
-      color: #777;
-    }
-    /* Responsive design */
-    @media (max-width: 600px) {
-      .container {
-        padding: 10px;
-      }
-      .btn {
-        padding: 8px 15px;
-        font-size: 0.9em;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Trading Game</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .stock {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stock button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .stock button:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #leaderboard {
+            margin-top: 20px;
+        }
+
+        #leaderboard h2 {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .balance {
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <header>Stock Market Game for Kids</header>
-  <div class="container">
-    <p>Welcome to the Stock Market Game! Manage your virtual portfolio and learn about the stock market.</p>
-    <table class="stock-table">
-      <thead>
-        <tr>
-          <th>Stock</th>
-          <th>Price</th>
-          <th>Change</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="stock-list"></tbody>
-    </table>
-    <p><strong>Balance:</strong> $<span id="balance">1000</span></p>
-    <div>
-      <button class="btn" id="show-tips">Show Tips</button>
-    </div>
+    <header>
+        <h1>Stock Trading Game</h1>
+    </header>
+
+    <main>
+        <div class="balance">Current Balance: $<span id="balance">1000</span></div>
+
+        <div id="stocks">
+            <!-- Stocks will be dynamically added here -->
+        </div>
+
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Net Worth</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Leaderboard rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
     <footer>
-      <p>&copy; 2025 Stock Market Game for Kids</p>
+        <p>&copy; 2025 Stock Trading Game</p>
     </footer>
-  </div>
-  <script>
-    // Initialize stock data and player balance
-    const stocks = [
-      { name: "TechCorp", price: 100, change: 0 },
-      { name: "FoodInc", price: 50, change: 0 },
-      { name: "EcoEnergy", price: 75, change: 0 },
-    ];
-    let balance = 1000;
 
-    // Update stock prices randomly
-    function updateStockPrices() {
-      stocks.forEach(stock => {
-        const change = Math.round((Math.random() * 10 - 5) * 100) / 100; // Random change between -5 and +5
-        stock.price = Math.max(stock.price + change, 1); // Ensure price doesn't go below $1
-        stock.change = change;
-      });
-      renderStocks();
-    }
+    <script>
+        // Game data
+        const initialBalance = 1000;
+        let balance = initialBalance;
+        let stocks = [
+            { name: 'TechCorp', price: 100 },
+            { name: 'HealthInc', price: 150 },
+            { name: 'EcoEnergy', price: 80 }
+        ];
+        let leaderboard = [
+            { player: 'Player1', netWorth: 1200 },
+            { player: 'Player2', netWorth: 900 }
+        ];
 
-    // Render stock data in the table
-    function renderStocks() {
-      const stockList = document.getElementById("stock-list");
-      stockList.innerHTML = stocks
-        .map(
-          stock => `
-        <tr>
-          <td>${stock.name}</td>
-          <td>$${stock.price.toFixed(2)}</td>
-          <td style="color: ${stock.change >= 0 ? 'green' : 'red'}">
-            ${stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}
-          </td>
-          <td>
-            <button class="btn" onclick="buyStock('${stock.name}')">Buy</button>
-          </td>
-        </tr>`
-        )
-        .join("");
-    }
+        // Helper to format as currency
+        function formatCurrency(amount) {
+            return amount.toFixed(2);
+        }
 
-    // Handle stock purchase
-    function buyStock(stockName) {
-      const stock = stocks.find(s => s.name === stockName);
-      if (balance >= stock.price) {
-        balance -= stock.price;
-        document.getElementById("balance").textContent = balance.toFixed(2);
-        alert(`You bought 1 share of ${stock.name} for $${stock.price.toFixed(2)}!`);
-      } else {
-        alert("Not enough balance to buy this stock.");
-      }
-    }
+        // Update balance display
+        function updateBalance() {
+            document.getElementById('balance').textContent = formatCurrency(balance);
+        }
 
-    // Show educational tips
-    document.getElementById("show-tips").addEventListener("click", () => {
-      alert("Tip: Diversify your investments to minimize risk!");
-    });
+        // Update leaderboard
+        function updateLeaderboard() {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+            leaderboard.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${entry.player}</td><td>$${formatCurrency(entry.netWorth)}</td>`;
+                tbody.appendChild(row);
+            });
+        }
 
-    // Update stock prices every 5 seconds
-    setInterval(updateStockPrices, 5000);
+        // Render stocks
+        function renderStocks() {
+            const stocksDiv = document.getElementById('stocks');
+            stocksDiv.innerHTML = '';
+            stocks.forEach((stock, index) => {
+                const stockDiv = document.createElement('div');
+                stockDiv.className = 'stock';
+                stockDiv.innerHTML = `
+                    <span>${stock.name}: $${formatCurrency(stock.price)}</span>
+                    <button onclick="buyStock(${index})">Buy</button>
+                    <button onclick="sellStock(${index})">Sell</button>
+                `;
+                stocksDiv.appendChild(stockDiv);
+            });
+        }
 
-    // Initial render
-    renderStocks();
-  </script>
+        // Buy stock
+        function buyStock(index) {
+            const stock = stocks[index];
+            if (balance >= stock.price) {
+                balance -= stock.price;
+                stock.price *= 1.1; // Increase stock price by 10%
+                updateBalance();
+                renderStocks();
+            } else {
+                alert('Not enough balance to buy this stock!');
+            }
+        }
+
+        // Sell stock
+        function sellStock(index) {
+            const stock = stocks[index];
+            balance += stock.price;
+            stock.price *= 0.9; // Decrease stock price by 10%
+            updateBalance();
+            renderStocks();
+        }
+
+        // Initialize game
+        function initGame() {
+            updateBalance();
+            renderStocks();
+            updateLeaderboard();
+        }
+
+        // Start the game
+        initGame();
+    </script>
 </body>
 </html>
